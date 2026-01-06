@@ -55,7 +55,7 @@ public class SecurityConfig {
 
         config.setAllowedOriginPatterns(List.of(
         "http://localhost:5173",
-        "https://smart-farm-management.vercel.app"
+        "https://smart-farm-management-frontend.vercel.app/"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
