@@ -22,11 +22,11 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-    // 🔥 IMPORTANT: skip auth endpoints
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getRequestURI().startsWith("/api/auth/");
-    }
+protected boolean shouldNotFilter(HttpServletRequest request) {
+    return request.getMethod().equals("OPTIONS")
+        || request.getRequestURI().startsWith("/api/auth/");
+}
 
     @Override
     protected void doFilterInternal(

@@ -26,24 +26,28 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                // 🔥 MUST BE FIRST — allow preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // ✅ EXPLICITLY ALLOW PROFILE UPLOAD + ME
-                .requestMatchers("/api/users/upload-profile").authenticated()
+                // 🔓 Auth endpoints
+                .requestMatchers("/api/auth/**").permitAll()
+
+                // 🔐 Protected endpoints
                 .requestMatchers("/api/users/me").authenticated()
+                .requestMatchers("/api/users/upload-profile").authenticated()
 
                 .anyRequest().authenticated()
             )
 
+            // 🔥 JWT AFTER CORS & OPTIONS
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -54,10 +58,14 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOriginPatterns(List.of(
-        "http://localhost:5173",
-        "https://smart-farm-management-frontend.vercel.app/"
+            "http://localhost:5173",
+            "https://smart-farm-management-frontend.vercel.app"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        config.setAllowedMethods(List.of(
+            "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
+
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
