@@ -28,16 +28,15 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-
             .authorizeHttpRequests(auth -> auth
-                // 🔥 MUST BE FIRST — allow preflight
+
+                // ✅ Allow CORS preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // 🔓 Auth endpoints
+                // 🔓 Public auth endpoints
                 .requestMatchers("/api/auth/**").permitAll()
 
                 // 🔐 Protected endpoints
@@ -47,33 +46,33 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
 
-            // 🔥 JWT AFTER CORS & OPTIONS
+            // 🔥 JWT filter
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-   @Bean
-public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration config = new CorsConfiguration();
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
 
-    config.setAllowedOrigins(List.of(
-        "http://localhost:5173",
-        "https://smart-farm-management-frontend.vercel.app"
-    ));
+        CorsConfiguration config = new CorsConfiguration();
 
-    config.setAllowedMethods(List.of(
-        "GET", "POST", "PUT", "DELETE", "OPTIONS"
-    ));
+        config.setAllowedOriginPatterns(List.of(
+            "http://localhost:5173",
+            "https://smart-farm-management-frontend.vercel.app"
+        ));
 
-    config.setAllowedHeaders(List.of("*"));
-    config.setAllowCredentials(true);
+        config.setAllowedMethods(List.of(
+            "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
 
-    UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
 
-    return source;
-}
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
 
+        return source;
+    }
 }
